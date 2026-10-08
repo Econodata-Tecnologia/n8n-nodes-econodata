@@ -11,39 +11,39 @@ import { econodataApiRequest, parseFiltros, toStringArray } from './GenericFunct
 
 /** Buckets opcionais de `incluir` (v4.1: 5 buckets por categoria de valor). Ordem A-Z p/ o lint. */
 const bucketOptions = [
-	{ name: 'Cadastro', value: 'cadastro' },
-	{ name: 'Contatos Avançados', value: 'contatosAvancados' },
-	{ name: 'Contatos Básicos', value: 'contatosBasicos' },
-	{ name: 'Estratégico', value: 'estrategico' },
-	{ name: 'Perfil Do Negócio', value: 'perfilNegocio' },
+	{ name: 'Advanced Contacts', value: 'contatosAvancados' },
+	{ name: 'Basic Contacts', value: 'contatosBasicos' },
+	{ name: 'Business Profile', value: 'perfilNegocio' },
+	{ name: 'Registration Data', value: 'cadastro' },
+	{ name: 'Strategic', value: 'estrategico' },
 ];
 
 /** Opções compartilhadas (incluir/campos/limite) dos endpoints de enriquecimento/segmentação. */
 const opcoesEnriquecimentoValues = [
 	{
-		displayName: 'Buckets a Incluir',
+		displayName: 'Data Groups to Include',
 		name: 'incluir',
 		type: 'multiOptions' as const,
 		options: bucketOptions,
 		default: [],
 		description:
-			'Buckets a expandir (v4.1): cadastro (razão social/fantasia/RFB), estratégico (porte/faturamento/tech), perfilNegocio (setor/matriz-filiais/dívidas), contatosBasicos (tel não-verificados/e-mails), contatosAvancados (tel verificados/decisores). Sem incluir, o lookup retorna só o cnpj. Cada bucket entregue cobra tokens',
+			'Data groups to return for each company: registration data (legal and trade name), strategic (size, revenue, technologies), business profile (industry, headquarters and branches, debts), basic contacts (phones and emails) and advanced contacts (verified phones, decision makers). With none selected, only the CNPJ is returned. Each group delivered uses tokens.',
 	},
 	{
-		displayName: 'Campos (Dot-Path)',
+		displayName: 'Fields',
 		name: 'campos',
 		type: 'string' as const,
 		default: '',
 		description:
-			'Recorte de folhas por dot-path, separado por vírgula (ex.: cadastro.razaoSocial, contatosBasicos.telefones). Auto-inclui o bucket da folha.',
+			'Comma-separated list of specific fields to return, e.g. cadastro.razaoSocial, contatosBasicos.telefones. The data group of each field is included automatically.',
 	},
 	{
-		displayName: 'Limite Por Lista',
+		displayName: 'Limit per List',
 		name: 'limite',
 		type: 'number' as const,
 		default: 5,
 		description:
-			'Máximo de itens por lista de cada empresa (telefones, e-mails, sócios…). 0 = todos (cobra tudo).',
+			'Max number of items in each list of a company (phones, emails, partners). Use 0 to return all items, which uses more tokens.',
 	},
 ];
 
@@ -89,7 +89,7 @@ export class Econodata implements INodeType {
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
-		description: 'Enriquecimento e segmentação de empresas B2B via API v4 da Econodata',
+		description: 'Enrich and segment Brazilian B2B companies with the Econodata API',
 		defaults: { name: 'Econodata' },
 		usableAsTool: true,
 		inputs: [NodeConnectionTypes.Main],
@@ -97,100 +97,100 @@ export class Econodata implements INodeType {
 		credentials: [{ name: 'econodataApi', required: true }],
 		properties: [
 			{
-				displayName: 'Recurso',
+				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'Conta', value: 'account' },
-					{ name: 'Empresa', value: 'company' },
+					{ name: 'Account', value: 'account' },
+					{ name: 'Company', value: 'company' },
 				],
 				default: 'company',
 			},
 			// ── Operações de Empresa ──
 			{
-				displayName: 'Operação',
+				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
 				displayOptions: { show: { resource: ['company'] } },
 				options: [
 					{
-						name: 'Buscar Decisores',
-						value: 'people',
-						action: 'Buscar decisores e colaboradores de uma empresa',
-						description: 'Organograma paginado de uma empresa (GET /v4/companies/{cnpj}/people)',
-					},
-					{
-						name: 'Contar Segmento Por Filtros',
+						name: 'Count by Filters',
 						value: 'calcList',
-						action: 'Contar empresas de um segmento por filtros',
-						description: 'Só o total do segmento por filtros diretos (POST /v4/companies/calc_list)',
+						action: 'Count companies by filters',
+						description: 'Get only the number of companies that match the filters',
 					},
 					{
-						name: 'Contar Segmento Por Pesquisa Salva',
+						name: 'Count by Saved Search',
 						value: 'calcListById',
-						action: 'Contar empresas de uma pesquisa salva',
-						description: 'Só o total do segmento de uma pesquisa salva (POST /v4/companies/calc_list_by_id)',
+						action: 'Count companies in a saved search',
+						description: 'Get only the number of companies in a saved search',
 					},
 					{
-						name: 'Encontrar Empresa',
-						value: 'search',
-						action: 'Encontrar empresa por CNPJ site ou email',
-						description: 'Enriquece 1 empresa por identificador forte (POST /v4/companies/search)',
-					},
-					{
-						name: 'Enriquecer Lote',
+						name: 'Enrich Many',
 						value: 'lookupBatch',
-						action: 'Enriquecer um lote de empresas',
-						description: 'Enriquece até 100 CNPJs de uma vez (POST /v4/companies)',
+						action: 'Enrich many companies',
+						description: 'Enrich up to 100 companies by CNPJ at once',
 					},
 					{
-						name: 'Grupo Econômico',
+						name: 'Find',
+						value: 'search',
+						action: 'Find a company',
+						description: 'Find and enrich one company by CNPJ, website or email',
+					},
+					{
+						name: 'Get Economic Group',
 						value: 'economicGroup',
-						action: 'Listar empresas do grupo economico',
-						description: 'Empresas relacionadas de 1ª ordem por sócios (POST /v4/companies/economic-group)',
+						action: 'Get the economic group of a company',
+						description: 'Get the companies linked to a company through shared partners',
 					},
 					{
-						name: 'Listar Pesquisas Salvas',
-						value: 'savedSearches',
-						action: 'Listar as pesquisas salvas da conta',
-						description: 'Metadado das pesquisas salvas compartilhadas — grátis (GET /v4/companies/saved_searches)',
-					},
-					{
-						name: 'Match Por Nome',
-						value: 'match',
-						action: 'Encontrar empresa por nome aproximado',
-						description: 'Casa uma empresa por nome/identificadores, com score (POST /v4/companies/match)',
-					},
-					{
-						name: 'Segmentar Por Filtros',
+						name: 'Get Many by Filters',
 						value: 'searchList',
-						action: 'Listar empresas de um segmento por filtros',
-						description: 'Segmentação paginada por filtros diretos (POST /v4/companies/search_list)',
+						action: 'Get many companies by filters',
+						description: 'Get a page of companies that match the filters',
 					},
 					{
-						name: 'Segmentar Por Pesquisa Salva',
+						name: 'Get Many by Saved Search',
 						value: 'searchListById',
-						action: 'Listar empresas de uma pesquisa salva',
-						description: 'Segmentação paginada por pesquisa salva (POST /v4/companies/search_list_by_id)',
+						action: 'Get many companies from a saved search',
+						description: 'Get a page of companies from a saved search',
+					},
+					{
+						name: 'Get People',
+						value: 'people',
+						action: 'Get the people of a company',
+						description: 'Get the decision makers or employees of a company',
+					},
+					{
+						name: 'Get Saved Searches',
+						value: 'savedSearches',
+						action: 'Get the saved searches of the account',
+						description: 'Get the saved searches shared with the account. Free of charge.',
+					},
+					{
+						name: 'Match by Name',
+						value: 'match',
+						action: 'Match a company by name',
+						description: 'Find the company that best matches a name and other details, with a score',
 					},
 				],
 				default: 'search',
 			},
 			// ── Operação de Conta ──
 			{
-				displayName: 'Operação',
+				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
 				displayOptions: { show: { resource: ['account'] } },
 				options: [
 					{
-						name: 'Ver Saldo',
+						name: 'Get Balance',
 						value: 'balance',
-						action: 'Ver o saldo de tokens da conta',
-						description: 'Saldo de tokens da conta autenticada (GET /v4/account/balance)',
+						action: 'Get the token balance',
+						description: 'Get the token balance of the account. Free of charge.',
 					},
 				],
 				default: 'balance',
@@ -202,69 +202,71 @@ export class Econodata implements INodeType {
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['search', 'match'] } },
-				description: 'CNPJ com ou sem máscara (normalizado no servidor)',
+				description: 'Brazilian company ID (CNPJ), with or without punctuation',
 			},
 			{
-				displayName: 'Site',
+				displayName: 'Website',
 				name: 'site',
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['search', 'match'] } },
-				description: 'Site/domínio da empresa (ex.: econodata.com.br)',
+				placeholder: 'e.g. econodata.com.br',
+				description: 'Website or domain of the company',
 			},
 			{
-				displayName: 'E-Mail',
+				displayName: 'Email',
 				name: 'email',
 				type: 'string',
 				placeholder: 'name@email.com',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['search', 'match'] } },
-				description: 'E-mail da empresa (o domínio é usado no casamento)',
+				description: 'Email address of the company. Its domain is used to find the company.',
 			},
 			{
-				displayName: 'Raiz Do CNPJ',
+				displayName: 'CNPJ Root',
 				name: 'raizCnpj',
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['search'] } },
-				description: 'Raiz do CNPJ (8 primeiros dígitos), com ou sem máscara',
+				description: 'First 8 digits of the CNPJ, shared by the headquarters and its branches',
 			},
 			{
-				displayName: 'Escopo',
+				displayName: 'Scope',
 				name: 'escopo',
 				type: 'options',
 				options: [
-					{ name: 'Filiais', value: 'filiais' },
-					{ name: 'Matriz E Filiais', value: 'matrizFiliais' },
-					{ name: 'Unidade', value: 'unidade' },
+					{ name: 'Branches', value: 'filiais' },
+					{ name: 'Headquarters and Branches', value: 'matrizFiliais' },
+					{ name: 'Single Unit', value: 'unidade' },
 				],
 				default: 'unidade',
 				displayOptions: { show: { resource: ['company'], operation: ['search'] } },
-				description: 'Traz só a unidade, as filiais, ou a matriz + filiais da mesma raiz (v4.1: grupo virou matrizFiliais)',
+				description: 'Whether to return only the unit found, its branches, or the headquarters and all branches with the same CNPJ root',
 			},
 			{
-				displayName: 'Nome Da Empresa',
+				displayName: 'Company Name',
 				name: 'nomeEmpresa',
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['match'] } },
-				description: 'Razão social ou nome fantasia para o casamento aproximado',
+				description: 'Legal or trade name of the company',
 			},
 			{
-				displayName: 'UF',
+				displayName: 'State',
 				name: 'uf',
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['match'] } },
-				description: 'UF (2 letras) para desambiguar o match — ex.: SP',
+				placeholder: 'e.g. SP',
+				description: 'Brazilian state code (2 letters) to tell similar names apart',
 			},
 			{
-				displayName: 'Telefone',
+				displayName: 'Phone',
 				name: 'telefone',
 				type: 'string',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['match'] } },
-				description: 'Telefone em qualquer formato (casamento exato após normalização)',
+				description: 'Phone number of the company, in any format',
 			},
 			// ── Lote ──
 			{
@@ -275,7 +277,7 @@ export class Econodata implements INodeType {
 				required: true,
 				typeOptions: { rows: 3 },
 				displayOptions: { show: { resource: ['company'], operation: ['lookupBatch'] } },
-				description: 'Até 100 CNPJs separados por vírgula ou quebra de linha',
+				description: 'Up to 100 CNPJs, separated by commas or line breaks',
 			},
 			// ── CNPJ único obrigatório (people + economicGroup) ──
 			{
@@ -285,11 +287,11 @@ export class Econodata implements INodeType {
 				default: '',
 				required: true,
 				displayOptions: { show: { resource: ['company'], operation: ['people', 'economicGroup'] } },
-				description: 'CNPJ da empresa (com ou sem máscara)',
+				description: 'CNPJ of the company, with or without punctuation',
 			},
 			// ── Nome de pesquisa salva (searchListById + calcListById) ──
 			{
-				displayName: 'Nome Da Pesquisa Salva',
+				displayName: 'Saved Search Name',
 				name: 'nomePesquisa',
 				type: 'string',
 				default: '',
@@ -297,24 +299,24 @@ export class Econodata implements INodeType {
 				displayOptions: {
 					show: { resource: ['company'], operation: ['searchListById', 'calcListById'] },
 				},
-				description: 'Nome exato da pesquisa salva (dica: use "Listar Pesquisas Salvas")',
+				description: 'Exact name of the saved search. Use the "Get Saved Searches" operation to see the names.',
 			},
 			// ── Filtros (searchList + calcList) ──
 			{
-				displayName: 'Filtros (JSON)',
+				displayName: 'Filters (JSON)',
 				name: 'filtros',
 				type: 'json',
 				default: '={}',
 				required: true,
 				displayOptions: { show: { resource: ['company'], operation: ['searchList', 'calcList'] } },
-				description: 'Filtros diretos, ex.: {"uf":["SP"],"porte":["MEDIO"],"cnaePrimario":["6201-5/01"]}',
+				description: 'Filters for the segment, e.g. {"uf":["SP"],"porte":["MEDIO"],"cnaePrimario":["6201-5/01"]}',
 			},
 			// ── Opções de enriquecimento (search/match/lote/segmentações) ──
 			{
-				displayName: 'Opções',
+				displayName: 'Options',
 				name: 'opcoes',
 				type: 'collection',
-				placeholder: 'Adicionar opção',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					show: {
@@ -326,10 +328,10 @@ export class Econodata implements INodeType {
 			},
 			// ── Paginação das segmentações ──
 			{
-				displayName: 'Paginação',
+				displayName: 'Pagination',
 				name: 'paginacao',
 				type: 'collection',
-				placeholder: 'Adicionar opção',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					show: { resource: ['company'], operation: ['searchList', 'searchListById'] },
@@ -340,75 +342,75 @@ export class Econodata implements INodeType {
 						name: 'cursor',
 						type: 'string',
 						default: '',
-						description: 'Cursor opaco da página anterior (cursorProximo). Vazio = primeira página.',
+						description: 'Value of cursorProximo from the previous page. Leave empty to get the first page.',
 					},
 					{
-						displayName: 'Tamanho Da Página',
+						displayName: 'Page Size',
 						name: 'tamanho',
 						type: 'number',
 						default: 50,
-						description: 'Itens por página (1–200)',
+						description: 'Number of items per page, from 1 to 200',
 					},
 				],
 			},
 			// ── Opções de "Buscar Decisores" ──
 			{
-				displayName: 'Opções',
+				displayName: 'Options',
 				name: 'opcoesPessoas',
 				type: 'collection',
-				placeholder: 'Adicionar opção',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: { show: { resource: ['company'], operation: ['people'] } },
 				options: [
 					{
-						displayName: 'Página',
+						displayName: 'Page',
 						name: 'pagina',
 						type: 'number',
 						default: 1,
-						description: 'Número da página (a partir de 1)',
+						description: 'Page number, starting at 1',
 					},
 					{
-						displayName: 'Papel',
+						displayName: 'Role',
 						name: 'papel',
 						type: 'options',
 						options: [
-							{ name: 'Colaboradores', value: 'colaboradores' },
-							{ name: 'Decisores', value: 'decisores' },
+							{ name: 'Decision Makers', value: 'decisores' },
+							{ name: 'Employees', value: 'colaboradores' },
 						],
 						default: 'decisores',
-						description: 'Quais pessoas trazer',
+						description: 'Which people to return',
 					},
 					{
-						displayName: 'Tamanho Da Página',
+						displayName: 'Page Size',
 						name: 'tamanho',
 						type: 'number',
 						default: 50,
-						description: 'Itens por página (1–200)',
+						description: 'Number of items per page, from 1 to 200',
 					},
 				],
 			},
 			// ── Opções de "Grupo Econômico" ──
 			{
-				displayName: 'Opções',
+				displayName: 'Options',
 				name: 'opcoesGrupo',
 				type: 'collection',
-				placeholder: 'Adicionar opção',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: { show: { resource: ['company'], operation: ['economicGroup'] } },
 				options: [
 					{
-						displayName: 'Página',
+						displayName: 'Page',
 						name: 'pagina',
 						type: 'number',
 						default: 1,
-						description: 'Número da página (a partir de 1)',
+						description: 'Page number, starting at 1',
 					},
 					{
-						displayName: 'Tamanho Da Página',
+						displayName: 'Page Size',
 						name: 'tamanho',
 						type: 'number',
 						default: 20,
-						description: 'Itens por página (1–100)',
+						description: 'Number of items per page, from 1 to 100',
 					},
 				],
 			},
@@ -433,7 +435,7 @@ export class Econodata implements INodeType {
 					if (Object.keys(criterios).length === 0) {
 						throw new NodeOperationError(
 							this.getNode(),
-							'Informe ao menos um identificador (CNPJ, site, e-mail ou raiz do CNPJ).',
+							'Enter at least one identifier: CNPJ, website, email or CNPJ root',
 							{ itemIndex: i },
 						);
 					}
@@ -453,7 +455,7 @@ export class Econodata implements INodeType {
 					if (Object.keys(criterios).length === 0) {
 						throw new NodeOperationError(
 							this.getNode(),
-							'Informe ao menos um critério de match (nome, CNPJ, site, e-mail ou telefone).',
+							'Enter at least one detail to match: company name, CNPJ, website, email or phone',
 							{ itemIndex: i },
 						);
 					}
@@ -463,7 +465,7 @@ export class Econodata implements INodeType {
 				} else if (operation === 'lookupBatch') {
 					const cnpjs = toStringArray(this.getNodeParameter('cnpjs', i, '') as string);
 					if (!cnpjs) {
-						throw new NodeOperationError(this.getNode(), 'Informe ao menos um CNPJ.', {
+						throw new NodeOperationError(this.getNode(), 'Enter at least one CNPJ', {
 							itemIndex: i,
 						});
 					}
@@ -535,7 +537,7 @@ export class Econodata implements INodeType {
 						body,
 					);
 				} else {
-					throw new NodeOperationError(this.getNode(), `Operação não suportada: ${operation}`, {
+					throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not supported`, {
 						itemIndex: i,
 					});
 				}

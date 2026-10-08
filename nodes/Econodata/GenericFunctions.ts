@@ -14,17 +14,17 @@ export const USER_AGENT = `econodata-n8n/${version}`;
 function statusHint(status?: number): string | undefined {
 	switch (status) {
 		case 401:
-			return 'Credencial inválida ou revogada — reveja a API key (ek_live_…) na credencial Econodata.';
+			return 'The API key was rejected. Check that the key in the Econodata credential (ek_live_...) is correct and still active.';
 		case 402:
-			return 'Saldo de tokens insuficiente — recarregue ou reduza os campos pedidos (incluir/campos).';
+			return 'The account does not have enough tokens. Top up the balance or request fewer data groups or fields.';
 		case 403:
-			return 'A chave não tem escopo para esta operação — use uma chave de integração (somente leitura).';
+			return 'This API key cannot run this operation. Use an integration key (read-only) created in Econodata.';
 		case 422:
-			return 'Dado de entrada inválido — confira os identificadores/filtros enviados.';
+			return 'Some input values are not valid. Check the identifiers or filters sent.';
 		case 429:
-			return 'Limite de requisições excedido — aguarde e repita (o cabeçalho Retry-After indica os segundos).';
+			return 'Too many requests in a short time. Wait and try again; the Retry-After header shows how many seconds.';
 		case 503:
-			return 'Fonte de dados temporariamente indisponível — repita com backoff.';
+			return 'The data source is temporarily unavailable. Try again in a few moments.';
 		default:
 			return undefined;
 	}
@@ -99,8 +99,8 @@ export function parseFiltros(node: INode, value: unknown): IDataObject {
 		try {
 			return JSON.parse(value) as IDataObject;
 		} catch {
-			throw new NodeOperationError(node, "Filtros: JSON inválido. Ex.: {\"uf\":[\"SP\"],\"porte\":[\"MEDIO\"]}");
+			throw new NodeOperationError(node, 'Filters must be valid JSON, e.g. {"uf":["SP"],"porte":["MEDIO"]}');
 		}
 	}
-	throw new NodeOperationError(node, 'Filtros são obrigatórios na segmentação por filtros diretos.');
+	throw new NodeOperationError(node, 'Enter the filters to get companies by filters');
 }

@@ -33,7 +33,7 @@ export class EconodataApi implements ICredentialType {
       default: '',
       required: true,
       description:
-        'Chave da API v4 (formato ek_live_…). Já é cliente: gere em <a href="https://plat.econodata.com.br/#/integracoes-api">Chaves e Integrações</a>, na plataforma Econodata. Novo cliente: comece pelo <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">trial da API</a>.',
+        'Econodata API v4 key (ek_live_...). Existing customers: create one in <a href="https://plat.econodata.com.br/#/integracoes-api">Chaves e Integrações</a> on the Econodata platform. New customers: start with the <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">API trial</a>.',
     },
     {
       displayName: 'Base URL',
@@ -42,7 +42,7 @@ export class EconodataApi implements ICredentialType {
       default: 'https://api.econodata.com.br',
       required: true,
       description:
-        'Host público da API v4. Produção: https://api.econodata.com.br · Homologação (HML): https://hmlapi.econodata.com.br',
+        'Address of the Econodata API. Production: https://api.econodata.com.br. Staging: https://hmlapi.econodata.com.br.',
     },
   ];
 

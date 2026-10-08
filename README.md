@@ -1,117 +1,122 @@
 # n8n-nodes-econodata
 
-Node de comunidade [n8n](https://n8n.io) da **Econodata** — enriqueça e segmente empresas B2B do Brasil
-(CNPJ, sócios, contatos, porte/faturamento, CNAE, dívidas, grupo econômico) direto nos seus fluxos,
-via a API pública da Econodata.
+[n8n](https://n8n.io) community node for **Econodata**. Enrich and segment Brazilian B2B companies (CNPJ, partners,
+contacts, size and revenue, CNAE, debts, economic group) right inside your workflows, using the public Econodata API.
 
-Ligue `[gatilho no seu CRM] → [Econodata enriquece] → [atualiza no CRM/planilha/e-mail]` **sem código**.
+Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet or email]` **without code**.
 
-> **v1 é somente leitura** (enriquecimento e segmentação): você *consulta* dados para usar no fluxo.
-> Não há gravação de volta nem gatilhos (triggers) nesta versão.
+> **Read-only.** The node fetches data to use in your workflow. It does not write data back and has no triggers.
 
-## Pré-requisitos
+## Prerequisites
 
-- Um **n8n** (self-host ou Cloud) com **Community nodes** habilitado.
-- Uma **API key da Econodata** no formato `ek_live_…`:
-  - **Já é cliente:** gere em [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api), na
-    plataforma Econodata. Para automações, prefira uma chave **somente leitura**.
-  - **Novo cliente:** comece pelo [trial da API](https://www.econodata.com.br/api-trial?utm_source=n8n).
+- An **n8n** instance (self-hosted or Cloud) with community nodes enabled.
+- An **Econodata API key** (`ek_live_...`):
+  - **Existing customers:** create one in [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api)
+    on the Econodata platform. For automations, prefer a **read-only** key.
+  - **New customers:** start with the [API trial](https://www.econodata.com.br/api-trial?utm_source=n8n).
 
-## Instalação
+## Installation
 
-No n8n: **Settings → Community nodes → Install** → informe `n8n-nodes-econodata` → **Install**.
-O node **Econodata** passa a aparecer na busca de nodes do editor.
+In n8n, go to **Settings → Community nodes → Install**, enter `n8n-nodes-econodata` and select **Install**.
+The **Econodata** node then shows up in the node search of the editor.
 
-_(Self-host, alternativa manual: `npm install n8n-nodes-econodata` no diretório do n8n e reinicie.)_
+Self-hosted alternative: run `npm install n8n-nodes-econodata` in the n8n folder and restart n8n.
 
-## Credencial
+## Credentials
 
-Crie uma credencial **"Econodata API"**:
+Create an **Econodata API** credential:
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **API Key** | sua chave `ek_live_…` |
-| **Base URL** | `https://api.econodata.com.br` (padrão) |
+| **API Key** | your `ek_live_...` key |
+| **Base URL** | `https://api.econodata.com.br` (default) |
 
-A chave é enviada como `Authorization: Bearer …`. O teste de conexão faz um `GET` de saldo (200 = chave
-válida). Uma credencial pode ser reusada em vários fluxos.
+The key is sent as `Authorization: Bearer ...`. The connection test reads the token balance (HTTP 200 means the key
+works). One credential can be reused in many workflows.
 
-## Início rápido
+## Quick start
 
-1. Adicione o node **Econodata** → recurso **Empresa** → operação **Encontrar Empresa**.
-2. Selecione a credencial.
-3. Informe um **CNPJ** (ex.: `47960950000121`, com ou sem máscara).
-4. Em **Incluir**, marque os *buckets* que quer trazer (ex.: `cadastro`).
-5. Execute — a saída já pode alimentar o próximo node do fluxo.
+1. Add the **Econodata** node, choose the **Company** resource and the **Find** operation.
+2. Select the credential.
+3. Enter a **CNPJ**, for example `47960950000121` (with or without punctuation).
+4. Under **Options → Data Groups to Include**, pick what to return, for example **Registration Data**.
+5. Run the node. The output can feed the next node of the workflow.
 
-Sem **Incluir**, o lookup devolve só o `cnpj` (mais barato). Cada bucket adicionado traz mais campos
-(e cobra tokens — veja abaixo).
+Without data groups, the node returns only the CNPJ, which is the cheapest call. Each group adds fields and uses tokens.
 
-## Operações
+## Operations
 
-**Recurso Empresa**
+**Company**
 
-| Operação | O que faz |
+| Operation | What it does |
 |---|---|
-| **Encontrar Empresa** | busca por CNPJ, site ou e-mail → 1 empresa |
-| **Match Por Nome** | busca aproximada por nome (fuzzy) |
-| **Enriquecer Lote** | lista de 1–100 CNPJs → empresas + erros |
-| **Segmentar Por Filtros** | lista paginada por filtros (porte, UF, CNAE, faturamento…) |
-| **Segmentar Por Pesquisa Salva** | segmentação a partir de uma pesquisa salva da conta (pelo nome) |
-| **Contar Segmento Por Filtros** | só a contagem de um segmento (barato) |
-| **Contar Segmento Por Pesquisa Salva** | só a contagem, a partir de uma pesquisa salva |
-| **Grupo Econômico** | empresas de 1ª ordem ligadas por sócios (paginado) |
-| **Listar Pesquisas Salvas** | pesquisas salvas da conta (para usar no "por pesquisa salva") |
-| **Buscar Decisores** | organograma paginado: decisores ou colaboradores da empresa |
+| **Find** | finds one company by CNPJ, website or email |
+| **Match by Name** | finds the company that best matches a name and other details, with a score |
+| **Enrich Many** | enriches a list of 1 to 100 CNPJs at once |
+| **Get Many by Filters** | returns a page of companies that match filters (size, state, CNAE, revenue...) |
+| **Get Many by Saved Search** | returns a page of companies from a saved search of the account, by name |
+| **Count by Filters** | returns only the number of companies that match the filters |
+| **Count by Saved Search** | returns only the number of companies in a saved search |
+| **Get Economic Group** | returns the companies linked through shared partners (paginated) |
+| **Get Saved Searches** | lists the saved searches of the account, to use in the "by saved search" operations |
+| **Get People** | returns the decision makers or employees of a company (paginated) |
 
-**Recurso Conta**
+**Account**
 
-| Operação | O que faz |
+| Operation | What it does |
 |---|---|
-| **Ver Saldo** | saldo de tokens da conta (não cobra) |
+| **Get Balance** | returns the token balance of the account, free of charge |
 
-## Enriquecimento: o que trazer
+## Choosing what to return
 
-- **Incluir** — expande a empresa em **buckets** (cada um entregue cobra tokens):
-  - `cadastro` — dados cadastrais (RFB): razão social/fantasia, natureza, endereço, CNAE, sócios.
-  - `estrategico` — porte, faturamento, headcount, tecnologias.
-  - `perfilNegocio` — setor, matriz + filiais, dívidas, NCM.
-  - `contatosBasicos` — telefones e e-mails.
-  - `contatosAvancados` — telefones verificados, redes sociais, score.
-- **Campos** — recorte fino por *dot-path* (ex.: `cadastro.razaoSocial, contatosBasicos.telefones`);
-  traz só o que precisa (e paga menos).
-- **Escopo** (no Encontrar Empresa) — `unidade` (padrão), `filiais` ou `matrizFiliais`.
-- **Limite** — teto de itens por lista (telefones, sócios, decisores…). `0` = todos.
+- **Data Groups to Include** (each group delivered uses tokens):
+  - **Registration Data**: legal and trade name, legal nature, address, CNAE, partners.
+  - **Strategic**: size, revenue, headcount, technologies.
+  - **Business Profile**: industry, headquarters and branches, debts, NCM.
+  - **Basic Contacts**: phones and emails.
+  - **Advanced Contacts**: verified phones, social networks, score.
+- **Fields**: a comma-separated list of specific fields, for example `cadastro.razaoSocial, contatosBasicos.telefones`.
+  Returns only what you need and costs less.
+- **Scope** (in **Find**): **Single Unit** (default), **Branches** or **Headquarters and Branches**.
+- **Limit per List**: max items in each list (phones, partners, decision makers). `0` returns all.
 
-## Custo em tokens
+## Example workflow
 
-A cobrança é em **tokens** (base do endpoint + campos entregues por empresa). Na prática:
+New deal in the CRM → **Econodata: Find** (CNPJ from the deal, groups **Registration Data** and **Basic Contacts**) →
+update the deal with the legal name, CNAE and phones.
 
-- Lookup **sem `Incluir` é barato**; cada bucket entregue adiciona custo.
-- **Segmentar** cobra o funil **a cada chamada** — para só saber o tamanho, use **Contar Segmento**.
-- Re-consultar a mesma empresa em 24h **não recobra** o que já foi cobrado.
-- Toda resposta traz o header **`X-Tokens-Charged`**. Acompanhe o saldo com **Ver Saldo**.
+To size a segment before pulling it, run **Count by Filters** first and only then **Get Many by Filters** with the same
+filters, page by page, using the cursor returned in `cursorProximo`.
 
-## Erros
+## Token usage
 
-| Status | Significado | O que fazer |
+Calls are charged in **tokens** (endpoint base cost plus the fields delivered for each company):
+
+- A lookup **without data groups is cheap**; each group delivered adds cost.
+- **Get Many** operations charge on **every call**. To only know the size of a segment, use **Count**.
+- Looking up the same company again within 24 hours does not charge again for what was already charged.
+- Every response has the **`X-Tokens-Charged`** header. Track the balance with **Get Balance**.
+
+## HTTP status codes
+
+| Status | Meaning | What to do |
 |---|---|---|
-| **401** | chave inválida/revogada/expirada | confira a API key |
-| **402** | sem saldo de tokens | recarregue / veja o saldo |
-| **403** | a chave não tem o escopo da operação | use uma chave com o escopo certo |
-| **422** | parâmetro inválido (CNPJ, filtro, cursor) | ajuste a entrada |
-| **429** | rate limit (60/min por chave) | respeite o header `Retry-After` |
-| **503** | serviço momentaneamente indisponível | tente de novo (use *Retry On Fail*) |
+| **401** | invalid, revoked or expired key | check the API key |
+| **402** | not enough tokens | top up or check the balance |
+| **403** | the key cannot run this operation | use a key with the right scope |
+| **422** | invalid input (CNPJ, filter, cursor) | fix the input |
+| **429** | rate limit (60 per minute per key) | wait for the time in the `Retry-After` header |
+| **503** | service temporarily unavailable | try again (use *Retry On Fail*) |
 
-Dica: em lotes/listas, ative **"Continue On Fail"** no node para um item com erro não derrubar o fluxo.
+Tip: in lists and batches, turn on **Continue On Fail** so one item does not stop the whole workflow.
 
-## Suporte
+## Support
 
-Econodata — plataforma de *sales intelligence* / prospecção B2B: [econodata.com.br](https://www.econodata.com.br).
-Dúvidas sobre a API e chaves: [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api), na plataforma.
-Documentação da API v4: [econodata-tecnologia.github.io/api-v4-docs](https://econodata-tecnologia.github.io/api-v4-docs/).
+Econodata is a B2B sales intelligence and prospecting platform: [econodata.com.br](https://www.econodata.com.br).
+API keys: [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api), on the platform.
+API v4 documentation (Portuguese): [econodata-tecnologia.github.io/api-v4-docs](https://econodata-tecnologia.github.io/api-v4-docs/).
 
-## Contribuindo
+## Development
 
 ```bash
 npm ci
@@ -120,8 +125,9 @@ npm run lint
 npm test
 ```
 
-Publicação: uma GitHub Release na tag `v<versão>` publica no npm pela Action `publish-npm.yml`.
+Publishing: run the **Publish (npm)** workflow (`workflow_dispatch`) on `main`. It builds, lints, tests and publishes
+to npm with provenance.
 
-## Licença
+## License
 
 [MIT](./LICENSE) © Econodata

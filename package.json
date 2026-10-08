@@ -1,0 +1,68 @@
+{
+  "name": "n8n-nodes-econodata",
+  "version": "1.1.0",
+  "description": "Enriqueça seu CRM com dados de empresas do Brasil no n8n: busque por CNPJ, nome ou e-mail e traga cadastro, contatos e decisores pela API v4 da Econodata.",
+  "keywords": [
+    "n8n-community-node-package",
+    "econodata",
+    "cnpj",
+    "crm",
+    "b2b",
+    "enrichment",
+    "dados-de-empresas",
+    "enriquecimento",
+    "lgpd"
+  ],
+  "license": "MIT",
+  "homepage": "https://econodata-tecnologia.github.io/api-v4-docs/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Econodata-Tecnologia/n8n-nodes-econodata.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Econodata-Tecnologia/n8n-nodes-econodata/issues"
+  },
+  "author": {
+    "name": "Econodata",
+    "email": "produto@econodata.com.br"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/EconodataApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Econodata/Econodata.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "^0.51.1",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.29.0",
+    "n8n-workflow": "*",
+    "prettier": "^3.3.0",
+    "typescript": "^5.7.0"
+  }
+}

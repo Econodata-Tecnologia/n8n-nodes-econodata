@@ -12,7 +12,7 @@ Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet
 - An **n8n** instance (self-hosted or Cloud) with community nodes enabled.
 - An **Econodata API key** (`ek_live_...`):
   - **Existing customers:** create one on the [API keys page](https://plat.econodata.com.br/#/integracoes-api)
-    (Chaves e Integrações) of the Econodata platform. For automations, prefer a **read-only** key.
+    of the Econodata platform. For automations, prefer a **read-only** key.
   - **New customers:** start with the [API trial](https://www.econodata.com.br/api-trial?utm_source=n8n).
 
 ## Installation
@@ -79,9 +79,11 @@ Without data groups, the node returns only the CNPJ, which is the cheapest call.
   Returns only what you need and costs less.
 - **Scope** (in **Find**): **Single Unit** (default), **Branches** or **Headquarters and Branches**.
 - **Limit per List**: max items in each list (phones, partners, decision makers). `0` returns all.
-- **Simplify** (on by default): returns up to 10 key fields per company (CNPJ, legal and trade name, status, state,
-  main CNAE, size, first phone, email). It only trims the output; turn it off to get every field of the data groups
-  you requested. The data groups requested are charged either way.
+- **Simplify** (off by default): returns up to 10 key fields per company (CNPJ, legal and trade name, status, state,
+  main CNAE, size, first phone, email). Other fields, such as branches, strategic data and advanced contacts, are left
+  out, but the data groups you request are charged either way.
+- **Enrich Many** returns one item per company found and one item per CNPJ not found; the second kind has a `motivo`
+  field (for example `not_found`).
 - **Return All** and **Limit** (in **Get Many**, **Get People** and **Get Economic Group**): each company or person
   is one output item, and the node goes through the pages for you. Every page uses tokens.
 
@@ -103,7 +105,7 @@ Calls are charged in **tokens** (endpoint base cost plus the fields delivered fo
 - A lookup **without data groups is cheap**; each group delivered adds cost.
 - **Get Many** operations charge on **every call**. To only know the size of a segment, use **Count**.
 - Looking up the same company again within 24 hours does not charge again for what was already charged.
-- Every response has the **`X-Tokens-Charged`** header. Track the balance with **Get Balance**.
+- Charged responses have the **`X-Tokens-Charged`** header. Track the balance with **Get Balance**.
 
 ## HTTP status codes
 
@@ -132,7 +134,7 @@ Tested with n8n 2.41. Requires community nodes enabled.
 ## Support
 
 Econodata is a B2B sales intelligence and prospecting platform: [econodata.com.br](https://www.econodata.com.br).
-API keys: [API keys page](https://plat.econodata.com.br/#/integracoes-api) (Chaves e Integrações) on the platform.
+API keys: [API keys page](https://plat.econodata.com.br/#/integracoes-api) on the platform.
 API v4 documentation (Portuguese): [econodata-tecnologia.github.io/api-v4-docs](https://econodata-tecnologia.github.io/api-v4-docs/).
 
 ## Development

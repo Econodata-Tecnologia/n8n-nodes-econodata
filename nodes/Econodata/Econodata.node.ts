@@ -146,13 +146,13 @@ export class Econodata implements INodeType {
 						name: 'Get Many by Filters',
 						value: 'searchList',
 						action: 'Get many companies by filters',
-						description: 'Get a page of companies that match the filters',
+						description: 'Get the companies that match the filters',
 					},
 					{
 						name: 'Get Many by Saved Search',
 						value: 'searchListById',
 						action: 'Get many companies from a saved search',
-						description: 'Get a page of companies from a saved search',
+						description: 'Get the companies of a saved search',
 					},
 					{
 						name: 'Get People',
@@ -435,7 +435,7 @@ export class Econodata implements INodeType {
 				displayName: 'Simplify',
 				name: 'simplify',
 				type: 'boolean',
-				default: true,
+				default: false,
 				displayOptions: {
 					show: {
 						'@version': [2],
@@ -444,7 +444,7 @@ export class Econodata implements INodeType {
 					},
 				},
 				description:
-					'Whether to return a simplified version of the response instead of the raw data. It only trims the output: the data groups requested are still charged.',
+					'Whether to return up to 10 key fields per company instead of the raw data. Other fields, such as branches, strategic data and advanced contacts, are left out but still charged if requested.',
 			},
 			{
 				displayName: 'Pagination',
@@ -652,7 +652,11 @@ function savedSearchName(ctx: IExecuteFunctions, i: number, v2: boolean): string
 				extractValue: true,
 			}) as string)
 		: (ctx.getNodeParameter('nomePesquisa', i) as string);
-	return String(nome ?? '').trim();
+	const limpo = String(nome ?? '').trim();
+	if (v2 && limpo === '') {
+		throw new NodeOperationError(ctx.getNode(), 'Select a saved search', { itemIndex: i });
+	}
+	return limpo;
 }
 
 async function executeV1(
@@ -730,7 +734,12 @@ function listOf(response: IDataObject, key: string): IDataObject[] {
 }
 
 function limitOf(ctx: IExecuteFunctions, i: number): number {
-	return ctx.getNodeParameter('returnAll', i, false) ? Infinity : (ctx.getNodeParameter('limit', i, 50) as number);
+	if (ctx.getNodeParameter('returnAll', i, false)) return Infinity;
+	const limit = Math.floor(Number(ctx.getNodeParameter('limit', i, 50)));
+	if (!Number.isFinite(limit) || limit < 1) {
+		throw new NodeOperationError(ctx.getNode(), 'Limit must be 1 or more', { itemIndex: i });
+	}
+	return limit;
 }
 
 async function executeV2(
@@ -740,7 +749,7 @@ async function executeV2(
 	i: number,
 ): Promise<IDataObject[]> {
 	const simplify = (empresas: IDataObject[]): IDataObject[] =>
-		this.getNodeParameter('simplify', i, true) ? empresas.map(simplifyCompany) : empresas;
+		this.getNodeParameter('simplify', i, false) ? empresas.map(simplifyCompany) : empresas;
 
 	if (resource === 'account') {
 		return [await econodataApiRequest.call(this, 'GET', '/v4/account/balance')];
@@ -752,7 +761,7 @@ async function executeV2(
 	if (operation === 'match') {
 		const response = await econodataApiRequest.call(this, 'POST', '/v4/companies/match', matchBody(this, i));
 		const correspondencias = listOf(response, 'correspondencias');
-		if (!this.getNodeParameter('simplify', i, true)) return correspondencias;
+		if (!this.getNodeParameter('simplify', i, false)) return correspondencias;
 		return correspondencias.map((c) => ({
 			confianca: c.confianca,
 			...simplifyCompany({
@@ -806,7 +815,7 @@ async function executeV2(
 			const qs: IDataObject = {
 				papel,
 				pagina,
-				tamanho: Math.min(200, limit - pessoas.length),
+				tamanho: Math.min(200, limit),
 			};
 			const response = await econodataApiRequest.call(this, 'GET', `/v4/companies/${cnpj}/people`, {}, qs);
 			const itens = listOf(response, 'itens');
@@ -827,7 +836,7 @@ async function executeV2(
 			const body: IDataObject = {
 				cnpj,
 				pagina,
-				tamanho: Math.min(100, limit - empresas.length),
+				tamanho: Math.min(100, limit),
 			};
 			const response = await econodataApiRequest.call(this, 'POST', '/v4/companies/economic-group', body);
 			const lista = listOf(response, 'empresas');

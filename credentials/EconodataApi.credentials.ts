@@ -26,7 +26,7 @@ export class EconodataApi implements ICredentialType {
       default: '',
       required: true,
       description:
-        'Econodata API v4 key (ek_live_...). Existing customers: create one on the <a href="https://plat.econodata.com.br/#/integracoes-api">API keys page</a> (Chaves e Integrações) of the Econodata platform. New customers: start with the <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">API trial</a>.',
+        'Econodata API v4 key (ek_live_...). Existing customers: create one on the <a href="https://plat.econodata.com.br/#/integracoes-api">API keys page</a> of the Econodata platform. New customers: start with the <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">API trial</a>.',
     },
     {
       displayName: 'Base URL',

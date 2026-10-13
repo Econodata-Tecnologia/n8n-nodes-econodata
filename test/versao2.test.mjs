@@ -37,7 +37,7 @@ describe('nó Econodata, versão 2', () => {
 	});
 
 	it('Find com Simplify devolve a empresa resumida em no máximo 10 campos', async () => {
-		const saida = await rodar({ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj }, () => ({
+		const saida = await rodar({ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj, simplify: true }, () => ({
 			empresa: EMPRESA,
 		}));
 
@@ -59,7 +59,7 @@ describe('nó Econodata, versão 2', () => {
 	it('Simplify não pede grupo de dados a mais: sem grupo, sai só o CNPJ', async () => {
 		const capturadas = [];
 		const saida = await rodar(
-			{ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj },
+			{ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj, simplify: true },
 			() => ({ empresa: { cnpj: EMPRESA.cnpj } }),
 			capturadas,
 		);
@@ -68,9 +68,9 @@ describe('nó Econodata, versão 2', () => {
 		assert.deepEqual(saida[0].json, { cnpj: EMPRESA.cnpj });
 	});
 
-	it('Find sem Simplify devolve a empresa inteira', async () => {
+	it('Find devolve a empresa inteira quando Simplify fica no padrão (desligado)', async () => {
 		const saida = await rodar(
-			{ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj, simplify: false },
+			{ resource: 'company', operation: 'search', cnpj: EMPRESA.cnpj },
 			() => ({ empresa: EMPRESA }),
 		);
 
@@ -78,7 +78,7 @@ describe('nó Econodata, versão 2', () => {
 	});
 
 	it('Match devolve um item por correspondência, com a confiança', async () => {
-		const saida = await rodar({ resource: 'company', operation: 'match', nomeEmpresa: 'Magalu' }, () => ({
+		const saida = await rodar({ resource: 'company', operation: 'match', nomeEmpresa: 'Magalu', simplify: true }, () => ({
 			correspondencias: [
 				{ cnpj: '1', confianca: 0.9, razaoSocial: 'A', empresa: {} },
 				{ cnpj: '2', confianca: 0.5, razaoSocial: 'B', empresa: {} },
@@ -217,6 +217,68 @@ describe('nó Econodata, versão 2', () => {
 			],
 		);
 		assert.equal(saida.length, 2);
+	});
+
+	it('Get People com Limit acima de uma página mantém o tamanho fixo, sem repetir nem pular pessoa', async () => {
+		const capturadas = [];
+		const pessoasDaPagina = (qs) =>
+			Array.from({ length: qs.tamanho }, (_, n) => ({ nome: `P${(qs.pagina - 1) * qs.tamanho + n}` }));
+		const saida = await rodar(
+			{ resource: 'company', operation: 'people', cnpjEmpresa: '47960950000121', limit: 300 },
+			(opcoes) => ({ itens: pessoasDaPagina(opcoes.qs), totalPaginas: 5 }),
+			capturadas,
+		);
+
+		assert.deepEqual(
+			capturadas.map((c) => c.qs.tamanho),
+			[200, 200],
+		);
+		const nomes = saida.map((item) => item.json.nome);
+		assert.equal(nomes.length, 300);
+		assert.equal(new Set(nomes).size, 300);
+		assert.equal(nomes[299], 'P299');
+	});
+
+	it('Get Economic Group com Limit acima de uma página mantém o tamanho em 100', async () => {
+		const capturadas = [];
+		const saida = await rodar(
+			{ resource: 'company', operation: 'economicGroup', cnpjEmpresa: '47960950000121', limit: 150 },
+			(opcoes) => ({
+				empresas: Array.from({ length: opcoes.body.tamanho }, (_, n) => ({
+					cnpj: String((opcoes.body.pagina - 1) * opcoes.body.tamanho + n),
+				})),
+				temMais: true,
+			}),
+			capturadas,
+		);
+
+		assert.deepEqual(
+			capturadas.map((c) => c.body.tamanho),
+			[100, 100],
+		);
+		assert.equal(new Set(saida.map((item) => item.json.cnpj)).size, 150);
+	});
+
+	it('pesquisa salva vazia vira erro claro, sem chamar a API', async () => {
+		const capturadas = [];
+		await assert.rejects(
+			rodar(
+				{ resource: 'company', operation: 'calcListById', pesquisaSalva: { mode: 'list', value: '' } },
+				() => ({}),
+				capturadas,
+			),
+			/Select a saved search/,
+		);
+		assert.equal(capturadas.length, 0);
+	});
+
+	it('Limit menor que 1 vira erro claro, sem chamar a API', async () => {
+		const capturadas = [];
+		await assert.rejects(
+			rodar({ resource: 'company', operation: 'searchList', filtros: { uf: ['SP'] }, limit: 0 }, () => ({}), capturadas),
+			/Limit must be 1 or more/,
+		);
+		assert.equal(capturadas.length, 0);
 	});
 
 	it('Get Saved Searches devolve uma pesquisa por item', async () => {

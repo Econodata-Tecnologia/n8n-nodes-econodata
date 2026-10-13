@@ -53,13 +53,13 @@ Without data groups, the node returns only the CNPJ, which is the cheapest call.
 | **Find** | finds one company by CNPJ, website or email |
 | **Match by Name** | finds the company that best matches a name and other details, with a score |
 | **Enrich Many** | enriches a list of 1 to 100 CNPJs at once |
-| **Get Many by Filters** | returns a page of companies that match filters (size, state, CNAE, revenue...) |
-| **Get Many by Saved Search** | returns a page of companies from a saved search of the account, by name |
+| **Get Many by Filters** | returns the companies that match filters (size, state, CNAE, revenue...) |
+| **Get Many by Saved Search** | returns the companies of a saved search, picked from a list |
 | **Count by Filters** | returns only the number of companies that match the filters |
-| **Count by Saved Search** | returns only the number of companies in a saved search |
-| **Get Economic Group** | returns the companies linked through shared partners (paginated) |
-| **Get Saved Searches** | lists the saved searches of the account, to use in the "by saved search" operations |
-| **Get People** | returns the decision makers or employees of a company (paginated) |
+| **Count by Saved Search** | returns only the number of companies in a saved search, picked from a list |
+| **Get Economic Group** | returns the companies linked through shared partners |
+| **Get Saved Searches** | lists the saved searches of the account |
+| **Get People** | returns the decision makers or employees of a company |
 
 **Account**
 
@@ -79,6 +79,14 @@ Without data groups, the node returns only the CNPJ, which is the cheapest call.
   Returns only what you need and costs less.
 - **Scope** (in **Find**): **Single Unit** (default), **Branches** or **Headquarters and Branches**.
 - **Limit per List**: max items in each list (phones, partners, decision makers). `0` returns all.
+- **Simplify** (on by default): returns up to 10 key fields per company (CNPJ, legal and trade name, status, state,
+  main CNAE, size, first phone, email). It only trims the output; turn it off to get every field of the data groups
+  you requested. The data groups requested are charged either way.
+- **Return All** and **Limit** (in **Get Many**, **Get People** and **Get Economic Group**): each company or person
+  is one output item, and the node goes through the pages for you. Every page uses tokens.
+
+Workflows created with version 1.1.0 or earlier keep working as before: the node keeps their settings and output
+format (one item with the whole page and a manual cursor). New nodes added to a workflow use the current version.
 
 ## Example workflow
 
@@ -86,7 +94,7 @@ New deal in the CRM → **Econodata: Find** (CNPJ from the deal, groups **Regist
 update the deal with the legal name, CNAE and phones.
 
 To size a segment before pulling it, run **Count by Filters** first and only then **Get Many by Filters** with the same
-filters, page by page, using the cursor returned in `cursorProximo`.
+filters and a **Limit**.
 
 ## Token usage
 
@@ -109,6 +117,17 @@ Calls are charged in **tokens** (endpoint base cost plus the fields delivered fo
 | **503** | service temporarily unavailable | try again (use *Retry On Fail*) |
 
 Tip: in lists and batches, turn on **Continue On Fail** so one item does not stop the whole workflow.
+
+## Compatibility
+
+Tested with n8n 2.41. Requires community nodes enabled.
+
+## Version history
+
+- **1.2.0**: English interface; node version 2 with saved search list, Simplify, Return All and Limit, one item per
+  company or person.
+- **1.1.0**: public repository and npm provenance.
+- **1.0.2**: documentation links and User-Agent.
 
 ## Support
 

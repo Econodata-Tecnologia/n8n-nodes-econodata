@@ -2,6 +2,7 @@ import type {
 	IDataObject,
 	IExecuteFunctions,
 	IHttpRequestMethods,
+	ILoadOptionsFunctions,
 	IHttpRequestOptions,
 	INode,
 	JsonObject,
@@ -31,7 +32,7 @@ function statusHint(status?: number): string | undefined {
 }
 
 export async function econodataApiRequest(
-	this: IExecuteFunctions,
+	this: IExecuteFunctions | ILoadOptionsFunctions,
 	method: IHttpRequestMethods,
 	resource: string,
 	body: IDataObject = {},
@@ -54,13 +55,12 @@ export async function econodataApiRequest(
 	}
 
 	try {
-		return (await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			'econodataApi',
-			options,
-		)) as IDataObject;
+		return (await this.helpers.httpRequestWithAuthentication.call(this, 'econodataApi', options)) as IDataObject;
 	} catch (error) {
-		const raw = error as { httpCode?: string | number; response?: { statusCode?: number } };
+		const raw = error as {
+			httpCode?: string | number;
+			response?: { statusCode?: number };
+		};
 		const status = Number(raw.httpCode ?? raw.response?.statusCode ?? NaN);
 		const hint = statusHint(Number.isNaN(status) ? undefined : status);
 		throw new NodeApiError(this.getNode(), error as JsonObject, hint ? { message: hint } : {});
@@ -90,4 +90,29 @@ export function parseFiltros(node: INode, value: unknown): IDataObject {
 		}
 	}
 	throw new NodeOperationError(node, 'Enter the filters to get companies by filters');
+}
+
+const firstOf = (value: unknown): IDataObject | undefined =>
+	Array.isArray(value) && value.length > 0 ? (value[0] as IDataObject) : undefined;
+
+export function simplifyCompany(empresa: IDataObject): IDataObject {
+	const cadastro = (empresa.cadastro ?? {}) as IDataObject;
+	const perfil = (empresa.perfilNegocio ?? {}) as IDataObject;
+	const contatos = (empresa.contatosBasicos ?? {}) as IDataObject;
+	const cnae = (cadastro.cnaePrimario ?? {}) as IDataObject;
+	const simple: IDataObject = {
+		cnpj: empresa.cnpj,
+		razaoSocial: cadastro.razaoSocial ?? empresa.razaoSocial,
+		nomeFantasia: cadastro.nomeFantasia ?? empresa.nomeFantasia,
+		situacao: cadastro.situacao,
+		uf: cadastro.uf,
+		cnaePrimario: cnae.codigo,
+		porte: perfil.porte ?? cadastro.enquadramentoPorte,
+		telefone: firstOf(contatos.telefones)?.numero,
+		email: contatos.emailReceita ?? firstOf(contatos.emailsPublicos)?.email,
+	};
+	for (const key of Object.keys(simple)) {
+		if (simple[key] === undefined || simple[key] === null) delete simple[key];
+	}
+	return simple;
 }

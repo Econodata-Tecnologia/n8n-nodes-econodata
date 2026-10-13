@@ -9,6 +9,7 @@ const { homepage } = exigir('../package.json');
 
 const DOCUMENTACAO_PUBLICA = 'https://econodata-tecnologia.github.io/api-v4-docs/';
 const CHAVES_DO_CLIENTE = 'https://plat.econodata.com.br/#/integracoes-api';
+const SECAO_CREDENCIAL_DO_README = 'https://github.com/Econodata-Tecnologia/n8n-nodes-econodata#credentials';
 const TRIAL_COM_ORIGEM_N8N = 'https://www.econodata.com.br/api-trial?utm_source=n8n';
 
 describe('credencial EconodataApi', () => {
@@ -16,8 +17,8 @@ describe('credencial EconodataApi', () => {
 		assert.equal(new EconodataApi().test.request.headers['User-Agent'], USER_AGENT);
 	});
 
-	it('link de documentação da credencial abre a documentação pública', () => {
-		assert.ok(new EconodataApi().documentationUrl.startsWith(DOCUMENTACAO_PUBLICA));
+	it('link de documentação da credencial abre a seção Credentials do README, em inglês', () => {
+		assert.equal(new EconodataApi().documentationUrl, SECAO_CREDENCIAL_DO_README);
 	});
 
 	it('homepage do pacote no npm abre a documentação pública', () => {

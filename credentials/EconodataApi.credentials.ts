@@ -7,13 +7,6 @@ import type {
 } from 'n8n-workflow';
 import { USER_AGENT } from '../nodes/Econodata/GenericFunctions';
 
-/**
- * Credencial da API pública v4 da Econodata — autenticação por API key.
- *
- * A chave (ek_live_…) é emitida no painel "Integrações & API v4" (preset read-only de
- * integração). Injetada no header `Authorization: Bearer <apiKey>`. O teste de conexão
- * bate em `GET /v4/account/balance` (200 = válida; 401 = inválida).
- */
 export class EconodataApi implements ICredentialType {
   name = 'econodataApi';
 
@@ -22,7 +15,7 @@ export class EconodataApi implements ICredentialType {
   icon: Icon = { light: 'file:../icons/econodata.svg', dark: 'file:../icons/econodata.dark.svg' };
 
   documentationUrl =
-    'https://econodata-tecnologia.github.io/api-v4-docs/#/?id=_1-configurar-api-key-chaves-e-integrações';
+    'https://github.com/Econodata-Tecnologia/n8n-nodes-econodata#credentials';
 
   properties: INodeProperties[] = [
     {
@@ -33,7 +26,7 @@ export class EconodataApi implements ICredentialType {
       default: '',
       required: true,
       description:
-        'Econodata API v4 key (ek_live_...). Existing customers: create one in <a href="https://plat.econodata.com.br/#/integracoes-api">Chaves e Integrações</a> on the Econodata platform. New customers: start with the <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">API trial</a>.',
+        'Econodata API v4 key (ek_live_...). Existing customers: create one on the <a href="https://plat.econodata.com.br/#/integracoes-api">API keys page</a> of the Econodata platform. New customers: start with the <a href="https://www.econodata.com.br/api-trial?utm_source=n8n">API trial</a>.',
     },
     {
       displayName: 'Base URL',
@@ -42,7 +35,7 @@ export class EconodataApi implements ICredentialType {
       default: 'https://api.econodata.com.br',
       required: true,
       description:
-        'Address of the Econodata API. Production: https://api.econodata.com.br. Staging: https://hmlapi.econodata.com.br.',
+        'Address of the Econodata API. Keep the default unless Econodata support gives you another one.',
     },
   ];
 

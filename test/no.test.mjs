@@ -26,7 +26,7 @@ describe('nó Econodata', () => {
 		await assert.rejects(new Econodata().execute.call(contexto({ parametros: SALDO, falha })), (erro) => {
 			assert.ok(erro instanceof NodeApiError);
 			assert.equal(erro.httpCode, '402');
-			assert.match(erro.message, /Saldo de tokens insuficiente/);
+			assert.match(erro.message, /not have enough tokens/);
 			return true;
 		});
 	});
@@ -51,7 +51,7 @@ describe('nó Econodata', () => {
 		);
 
 		assert.equal(saida.length, 1);
-		assert.match(saida[0].json.error, /Saldo de tokens insuficiente/);
+		assert.match(saida[0].json.error, /not have enough tokens/);
 		assert.deepEqual(saida[0].pairedItem, { item: 0 });
 	});
 });

@@ -47,7 +47,7 @@ describe('econodataApiRequest', () => {
 			(erro) => {
 				assert.ok(erro instanceof NodeApiError);
 				assert.equal(erro.httpCode, '401');
-				assert.match(erro.message, /Credencial inválida ou revogada/);
+				assert.match(erro.message, /API key was rejected/);
 				return true;
 			},
 		);
@@ -63,7 +63,7 @@ describe('parseFiltros', () => {
 	it('JSON inválido vira NodeOperationError com o exemplo de formato', () => {
 		assert.throws(
 			() => parseFiltros(NO, '{uf:'),
-			(erro) => erro instanceof NodeOperationError && erro.message.startsWith('Filtros: JSON inválido.'),
+			(erro) => erro instanceof NodeOperationError && erro.message.startsWith('Filters must be valid JSON'),
 		);
 	});
 
@@ -72,7 +72,7 @@ describe('parseFiltros', () => {
 			() => parseFiltros(NO, '  '),
 			(erro) =>
 				erro instanceof NodeOperationError &&
-				erro.message === 'Filtros são obrigatórios na segmentação por filtros diretos.',
+				erro.message === 'Enter the filters to get companies by filters',
 		);
 	});
 });

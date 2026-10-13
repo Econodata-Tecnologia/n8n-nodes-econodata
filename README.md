@@ -11,8 +11,8 @@ Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet
 
 - An **n8n** instance (self-hosted or Cloud) with community nodes enabled.
 - An **Econodata API key** (`ek_live_...`):
-  - **Existing customers:** create one in [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api)
-    on the Econodata platform. For automations, prefer a **read-only** key.
+  - **Existing customers:** create one on the [API keys page](https://plat.econodata.com.br/#/integracoes-api)
+    (Chaves e Integrações) of the Econodata platform. For automations, prefer a **read-only** key.
   - **New customers:** start with the [API trial](https://www.econodata.com.br/api-trial?utm_source=n8n).
 
 ## Installation
@@ -113,7 +113,7 @@ Tip: in lists and batches, turn on **Continue On Fail** so one item does not sto
 ## Support
 
 Econodata is a B2B sales intelligence and prospecting platform: [econodata.com.br](https://www.econodata.com.br).
-API keys: [Chaves e Integrações](https://plat.econodata.com.br/#/integracoes-api), on the platform.
+API keys: [API keys page](https://plat.econodata.com.br/#/integracoes-api) (Chaves e Integrações) on the platform.
 API v4 documentation (Portuguese): [econodata-tecnologia.github.io/api-v4-docs](https://econodata-tecnologia.github.io/api-v4-docs/).
 
 ## Development

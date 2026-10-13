@@ -9,7 +9,6 @@ import type {
 import { NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { econodataApiRequest, parseFiltros, toStringArray } from './GenericFunctions';
 
-/** Buckets opcionais de `incluir` (v4.1: 5 buckets por categoria de valor). Ordem A-Z p/ o lint. */
 const bucketOptions = [
 	{ name: 'Advanced Contacts', value: 'contatosAvancados' },
 	{ name: 'Basic Contacts', value: 'contatosBasicos' },
@@ -18,7 +17,6 @@ const bucketOptions = [
 	{ name: 'Strategic', value: 'estrategico' },
 ];
 
-/** Opções compartilhadas (incluir/campos/limite) dos endpoints de enriquecimento/segmentação. */
 const opcoesEnriquecimentoValues = [
 	{
 		displayName: 'Data Groups to Include',
@@ -49,7 +47,6 @@ const opcoesEnriquecimentoValues = [
 
 const onlyDigits = (value: string): string => value.replace(/\D/g, '');
 
-/** Monta `criterios` a partir dos parâmetros informados, descartando vazios. */
 function buildCriterios(
 	ctx: IExecuteFunctions,
 	index: number,
@@ -65,7 +62,6 @@ function buildCriterios(
 	return criterios;
 }
 
-/** Aplica incluir/campos/limite (da collection `opcoes`) num corpo de request. */
 function applyOpcoes(ctx: IExecuteFunctions, index: number, body: IDataObject): void {
 	const opcoes = ctx.getNodeParameter('opcoes', index, {}) as IDataObject;
 	const incluir = opcoes.incluir as string[] | undefined;
@@ -107,7 +103,6 @@ export class Econodata implements INodeType {
 				],
 				default: 'company',
 			},
-			// ── Operações de Empresa ──
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -136,13 +131,13 @@ export class Econodata implements INodeType {
 					{
 						name: 'Find',
 						value: 'search',
-						action: 'Find a company',
+						action: 'Find company',
 						description: 'Find and enrich one company by CNPJ, website or email',
 					},
 					{
 						name: 'Get Economic Group',
 						value: 'economicGroup',
-						action: 'Get the economic group of a company',
+						action: 'Get economic group of company',
 						description: 'Get the companies linked to a company through shared partners',
 					},
 					{
@@ -160,25 +155,24 @@ export class Econodata implements INodeType {
 					{
 						name: 'Get People',
 						value: 'people',
-						action: 'Get the people of a company',
+						action: 'Get people of company',
 						description: 'Get the decision makers or employees of a company',
 					},
 					{
 						name: 'Get Saved Searches',
 						value: 'savedSearches',
-						action: 'Get the saved searches of the account',
+						action: 'Get saved searches of account',
 						description: 'Get the saved searches shared with the account. Free of charge.',
 					},
 					{
 						name: 'Match by Name',
 						value: 'match',
-						action: 'Match a company by name',
+						action: 'Match company by name',
 						description: 'Find the company that best matches a name and other details, with a score',
 					},
 				],
 				default: 'search',
 			},
-			// ── Operação de Conta ──
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -189,13 +183,12 @@ export class Econodata implements INodeType {
 					{
 						name: 'Get Balance',
 						value: 'balance',
-						action: 'Get the token balance',
+						action: 'Get token balance',
 						description: 'Get the token balance of the account. Free of charge.',
 					},
 				],
 				default: 'balance',
 			},
-			// ── Identificadores (search + match) ──
 			{
 				displayName: 'CNPJ',
 				name: 'cnpj',
@@ -217,7 +210,7 @@ export class Econodata implements INodeType {
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
-				placeholder: 'name@email.com',
+				placeholder: 'e.g. name@example.com',
 				default: '',
 				displayOptions: { show: { resource: ['company'], operation: ['search', 'match'] } },
 				description: 'Email address of the company. Its domain is used to find the company.',
@@ -268,7 +261,6 @@ export class Econodata implements INodeType {
 				displayOptions: { show: { resource: ['company'], operation: ['match'] } },
 				description: 'Phone number of the company, in any format',
 			},
-			// ── Lote ──
 			{
 				displayName: 'CNPJs',
 				name: 'cnpjs',
@@ -279,7 +271,6 @@ export class Econodata implements INodeType {
 				displayOptions: { show: { resource: ['company'], operation: ['lookupBatch'] } },
 				description: 'Up to 100 CNPJs, separated by commas or line breaks',
 			},
-			// ── CNPJ único obrigatório (people + economicGroup) ──
 			{
 				displayName: 'CNPJ',
 				name: 'cnpjEmpresa',
@@ -289,7 +280,6 @@ export class Econodata implements INodeType {
 				displayOptions: { show: { resource: ['company'], operation: ['people', 'economicGroup'] } },
 				description: 'CNPJ of the company, with or without punctuation',
 			},
-			// ── Nome de pesquisa salva (searchListById + calcListById) ──
 			{
 				displayName: 'Saved Search Name',
 				name: 'nomePesquisa',
@@ -299,9 +289,8 @@ export class Econodata implements INodeType {
 				displayOptions: {
 					show: { resource: ['company'], operation: ['searchListById', 'calcListById'] },
 				},
-				description: 'Exact name of the saved search. Use the "Get Saved Searches" operation to see the names.',
+				description: "Exact name of the saved search. Use the 'Get Saved Searches' operation to see the names.",
 			},
-			// ── Filtros (searchList + calcList) ──
 			{
 				displayName: 'Filters (JSON)',
 				name: 'filtros',
@@ -311,7 +300,6 @@ export class Econodata implements INodeType {
 				displayOptions: { show: { resource: ['company'], operation: ['searchList', 'calcList'] } },
 				description: 'Filters for the segment, e.g. {"uf":["SP"],"porte":["MEDIO"],"cnaePrimario":["6201-5/01"]}',
 			},
-			// ── Opções de enriquecimento (search/match/lote/segmentações) ──
 			{
 				displayName: 'Options',
 				name: 'opcoes',
@@ -326,7 +314,6 @@ export class Econodata implements INodeType {
 				},
 				options: opcoesEnriquecimentoValues,
 			},
-			// ── Paginação das segmentações ──
 			{
 				displayName: 'Pagination',
 				name: 'paginacao',
@@ -353,7 +340,6 @@ export class Econodata implements INodeType {
 					},
 				],
 			},
-			// ── Opções de "Buscar Decisores" ──
 			{
 				displayName: 'Options',
 				name: 'opcoesPessoas',
@@ -389,7 +375,6 @@ export class Econodata implements INodeType {
 					},
 				],
 			},
-			// ── Opções de "Grupo Econômico" ──
 			{
 				displayName: 'Options',
 				name: 'opcoesGrupo',
@@ -428,7 +413,6 @@ export class Econodata implements INodeType {
 				let response: IDataObject;
 
 				if (resource === 'account') {
-					// balance
 					response = await econodataApiRequest.call(this, 'GET', '/v4/account/balance');
 				} else if (operation === 'search') {
 					const criterios = buildCriterios(this, i, ['cnpj', 'site', 'email', 'raizCnpj']);

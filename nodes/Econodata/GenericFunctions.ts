@@ -30,11 +30,6 @@ function statusHint(status?: number): string | undefined {
 	}
 }
 
-/**
- * Chamada à API pública v4 da Econodata usando a credencial `econodataApi`
- * (Authorization: Bearer + baseUrl). Envia/recebe JSON; erros HTTP viram NodeApiError
- * com um hint por status.
- */
 export async function econodataApiRequest(
 	this: IExecuteFunctions,
 	method: IHttpRequestMethods,
@@ -72,10 +67,6 @@ export async function econodataApiRequest(
 	}
 }
 
-/**
- * Normaliza uma entrada de lista: array → limpa; string "a, b\nc" → split por vírgula/quebra.
- * Vazio → `undefined` (para não enviar a chave no corpo).
- */
 export function toStringArray(value: unknown): string[] | undefined {
 	let arr: string[] = [];
 	if (Array.isArray(value)) {
@@ -87,10 +78,6 @@ export function toStringArray(value: unknown): string[] | undefined {
 	return clean.length > 0 ? clean : undefined;
 }
 
-/**
- * Faz o parse de um campo de filtros (JSON) do `search_list`/`calc_list`. Aceita objeto
- * (quando vem por expressão n8n) ou string JSON. Objeto vazio/ inválido → erro claro.
- */
 export function parseFiltros(node: INode, value: unknown): IDataObject {
 	if (value && typeof value === 'object') {
 		return value as IDataObject;

@@ -9,7 +9,8 @@ Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet
 
 ## Prerequisites
 
-- An **n8n** instance (self-hosted or Cloud) with community nodes enabled.
+- A self-hosted **n8n** instance with community nodes enabled. On n8n Cloud, the node is available only after it is
+  verified by n8n.
 - An **Econodata API key** (`ek_live_...`):
   - **Existing customers:** create one on the [API keys page](https://plat.econodata.com.br/#/integracoes-api)
     of the Econodata platform. For automations, prefer a **read-only** key.
@@ -17,10 +18,11 @@ Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet
 
 ## Installation
 
-In n8n, go to **Settings → Community nodes → Install**, enter `n8n-nodes-econodata` and select **Install**.
-The **Econodata** node then shows up in the node search of the editor.
+On self-hosted n8n, go to **Settings → Community nodes → Install**, enter `n8n-nodes-econodata` and select
+**Install**. The **Econodata** node then shows up in the node search of the editor. Another option is to run
+`npm install n8n-nodes-econodata` in the n8n folder and restart n8n.
 
-Self-hosted alternative: run `npm install n8n-nodes-econodata` in the n8n folder and restart n8n.
+On n8n Cloud, once the node is verified, search for **Econodata** in the nodes panel and install it from there.
 
 ## Credentials
 

@@ -14,7 +14,7 @@ Build `[trigger in your CRM] → [Econodata enriches] → [update the CRM, sheet
 - An **Econodata API key** (`ek_live_...`):
   - **Existing customers:** create one on the [API keys page](https://plat.econodata.com.br/#/integracoes-api)
     of the Econodata platform. For automations, prefer a **read-only** key.
-  - **New customers:** start with the [API trial](https://www.econodata.com.br/api-trial?utm_source=n8n).
+  - **New customers:** start with the [API trial](https://www.econodata.com.br/api-trial?utm_source=n8n-github).
 
 ## Installation
 

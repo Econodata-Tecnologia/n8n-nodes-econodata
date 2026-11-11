@@ -11,6 +11,7 @@ const DOCUMENTACAO_PUBLICA = 'https://econodata-tecnologia.github.io/api-v4-docs
 const CHAVES_DO_CLIENTE = 'https://plat.econodata.com.br/#/integracoes-api';
 const SECAO_CREDENCIAL_DO_README = 'https://github.com/Econodata-Tecnologia/n8n-nodes-econodata#credentials';
 const TRIAL_COM_ORIGEM_N8N = 'https://www.econodata.com.br/api-trial?utm_source=n8n';
+const TRIAL_COM_ORIGEM_README = 'https://www.econodata.com.br/api-trial?utm_source=n8n-github';
 
 describe('credencial EconodataApi', () => {
 	it('teste de conexão manda o mesmo User-Agent do nó', () => {
@@ -32,11 +33,11 @@ describe('credencial EconodataApi', () => {
 		assert.ok(campo.description.includes(`href="${TRIAL_COM_ORIGEM_N8N}"`));
 	});
 
-	it('README do npm mostra os dois caminhos da chave', () => {
+	it('README mostra os dois caminhos da chave, com o trial marcado como origem n8n-github', () => {
 		const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
 
 		assert.ok(readme.includes(`(${CHAVES_DO_CLIENTE})`));
-		assert.ok(readme.includes(`(${TRIAL_COM_ORIGEM_N8N})`));
+		assert.ok(readme.includes(`(${TRIAL_COM_ORIGEM_README})`));
 	});
 
 	it('credencial usa os ícones claro e escuro que o build publica', () => {

@@ -151,6 +151,10 @@ npm test
 Publishing: run the **Publish (npm)** workflow (`workflow_dispatch`) on `main`. It builds, lints, tests and publishes
 to npm with provenance.
 
+### Keeping up with API changes
+
+This node is maintained by Econodata. Every pull request to the API v4 contract (a private repository) that changes an operation this node calls, breaking or not, gets an automatic "affected connectors" comment, and its author updates this node or opens a ticket for it. The operations behind that check are listed by hand in the API repository, so when this node starts calling a new operation, add it there too.
+
 ## License
 
 [MIT](./LICENSE) © Econodata
